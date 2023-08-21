@@ -1,0 +1,19 @@
+.github
+.git
+.gitignore
+.goreleaser.yaml
+README.md
+# .gitignore
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go-repeater
+main
+dist
+.vscode
+.idea
