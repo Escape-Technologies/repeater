@@ -32,6 +32,10 @@ func main() {
 func start(user string, pass string) {
 	proxy := goproxy.NewProxyHttpServer()
 
+	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		return req, nil
+	})
+
 	total := url
 	log.Printf("Listening on %s", total)
 	log.Fatal(http.ListenAndServe(total, proxy))
