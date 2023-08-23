@@ -16,10 +16,18 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 var url = "0.0.0.0:8080"
 
 func main() {
+	fmt.Printf("Running Escape repeater version %s, commit %s, built at %s\n", version, commit, date)
+
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
 	if !UUID.MatchString(repeaterId) {
 		log.Println("ESCAPE_REPEATER_ID must be a UUID in lowercase")
