@@ -3,11 +3,7 @@ module github.com/Escape-Technologies/repeater
 go 1.21
 
 require (
-	github.com/elazarl/goproxy v0.0.0-20190711103511-473e67f1d7d2
-	github.com/elazarl/goproxy/ext v0.0.0-20190711103511-473e67f1d7d2 // indirect
-)
-
-require (
+	github.com/google/uuid v1.3.0
 	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.30.0
 )
