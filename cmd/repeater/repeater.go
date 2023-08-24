@@ -76,30 +76,37 @@ func connectAndRun(client proto.RepeaterClient, ctx context.Context) {
 			log.Printf("Error receiving: %v \n", err)
 			return
 		}
+		log.Println("Got work")
 
 		// Send request to server
 		// Use a go func to avoid blocking the stream
 		go func() {
+			startTime := time.Now()
 			cReq, err := internal.TransportToRequest(req)
 			if err != nil {
+				log.Printf("ERROR[internal.TransportToRequest]: %v\n", err)
 				return
 			}
 
 			// work
 			cRes, err := http.DefaultClient.Do(cReq)
 			if err != nil {
+				log.Printf("ERROR[http.DefaultClient]: %v\n", err)
 				return
 			}
 
 			tRes, err := internal.ResponseToTransport(cRes, req.Correlation)
 			if err != nil {
+				log.Printf("ERROR[internal.ResponseToTransport]: %v\n", err)
 				return
 			}
 
 			err = stream.Send(tRes)
 			if err != nil {
+				log.Printf("ERROR[stream.Send]: %v\n", err)
 				return
 			}
+			log.Println("Ok in", time.Since(startTime))
 		}()
 
 	}
