@@ -85,6 +85,15 @@ func connectAndRun(client proto.RepeaterClient, ctx context.Context) (hasConnect
 
 		// Send request to server
 		// Use a go func to avoid blocking the stream
-		go internal.HandleRequest(req, &stream)
+		go func() {
+			startTime := time.Now()
+			res := internal.HandleRequest(req)
+			log.Println("Ok in", time.Since(startTime))
+
+			err = stream.Send(res)
+			if err != nil {
+				log.Printf("Error sending: %v\n", err)
+			}
+		}()
 	}
 }
