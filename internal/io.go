@@ -8,7 +8,7 @@ import (
 	"github.com/Escape-Technologies/repeater/proto"
 )
 
-func ResponseToTransport(r *http.Response, correlation int64) (*proto.Response, error) { // In the other program
+func responseToTransport(r *http.Response, correlation int64) (*proto.Response, error) { // In the other program
 	du := newDump()
 	err := r.Write(du)
 	if err != nil {
@@ -20,7 +20,7 @@ func ResponseToTransport(r *http.Response, correlation int64) (*proto.Response, 
 	}, nil
 }
 
-func TransportToRequest(r *proto.Request) (*http.Request, error) { // In the other program
+func transportToRequest(r *proto.Request) (*http.Request, error) { // In the other program
 	lo := newLoad(r.Data)
 	req, err := http.ReadRequest(bufio.NewReader(lo))
 	if err != nil {

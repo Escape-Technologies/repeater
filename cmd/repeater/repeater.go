@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"time"
@@ -56,58 +55,36 @@ func start(repeaterId string) {
 	client := proto.NewRepeaterClient(con)
 
 	for {
-		connectAndRun(client, ctx)
-		log.Printf("Disconnected, reconnecting in 5 seconds...")
+		alreadyConnected := connectAndRun(client, ctx)
+		log.Println("Disconnected...")
+		if alreadyConnected {
+			continue
+		}
+		log.Println("Reconnecting in 5 seconds...")
 		time.Sleep(5 * time.Second)
 	}
 }
 
-func connectAndRun(client proto.RepeaterClient, ctx context.Context) {
+func connectAndRun(client proto.RepeaterClient, ctx context.Context) (hasConnected bool) {
+	hasConnected = false
 	stream, err := client.Stream(ctx)
 	if err != nil {
 		log.Printf("Error creating stream: %v \n", err)
-		return
+		return hasConnected
 	}
+	hasConnected = true
 	log.Println("Connected to server...")
 
 	for {
 		req, err := stream.Recv()
 		if err != nil {
 			log.Printf("Error receiving: %v \n", err)
-			return
+			return hasConnected
 		}
 		log.Println("Got work")
 
 		// Send request to server
 		// Use a go func to avoid blocking the stream
-		go func() {
-			startTime := time.Now()
-			cReq, err := internal.TransportToRequest(req)
-			if err != nil {
-				log.Printf("ERROR[internal.TransportToRequest]: %v\n", err)
-				return
-			}
-
-			// work
-			cRes, err := http.DefaultClient.Do(cReq)
-			if err != nil {
-				log.Printf("ERROR[http.DefaultClient]: %v\n", err)
-				return
-			}
-
-			tRes, err := internal.ResponseToTransport(cRes, req.Correlation)
-			if err != nil {
-				log.Printf("ERROR[internal.ResponseToTransport]: %v\n", err)
-				return
-			}
-
-			err = stream.Send(tRes)
-			if err != nil {
-				log.Printf("ERROR[stream.Send]: %v\n", err)
-				return
-			}
-			log.Println("Ok in", time.Since(startTime))
-		}()
-
+		go internal.HandleRequest(req, &stream)
 	}
 }
