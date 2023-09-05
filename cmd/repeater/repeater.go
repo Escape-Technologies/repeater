@@ -68,13 +68,10 @@ func start(repeaterId string) {
 	con := getCon()
 	defer con.Close()
 
-	// Set the client UUID in the metadata
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "client_uuid", repeaterId)
-
 	client := proto.NewRepeaterClient(con)
 
 	for {
-		alreadyConnected := connectAndRun(client, ctx)
+		alreadyConnected := connectAndRun(client, repeaterId)
 		log.Println("Disconnected...")
 		if !alreadyConnected {
 			continue
@@ -84,8 +81,9 @@ func start(repeaterId string) {
 	}
 }
 
-func connectAndRun(client proto.RepeaterClient, ctx context.Context) (hasConnected bool) {
+func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected bool) {
 	hasConnected = false
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "client_uuid", repeaterId)
 	stream, err := client.Stream(ctx)
 	if err != nil {
 		log.Printf("Error creating stream: %v \n", err)
