@@ -21,14 +21,13 @@ import (
 var (
 	version = "dev"
 	commit  = "none"
-	date    = "unknown"
 )
 
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 var url = "repeater.escape.tech:443"
 
 func main() {
-	log.Printf("Running Escape repeater version %s, commit %s, built at %s\n", version, commit, date)
+	log.Printf("Running Escape repeater version %s, commit %s\n", version, commit)
 
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
 	if !UUID.MatchString(repeaterId) {
