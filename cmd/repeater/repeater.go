@@ -83,7 +83,7 @@ func start(repeaterId string) {
 
 func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected bool) {
 	hasConnected = false
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "client_uuid", repeaterId)
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", repeaterId)
 	stream, err := client.Stream(ctx)
 	if err != nil {
 		log.Printf("Error creating stream: %v \n", err)
