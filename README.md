@@ -22,7 +22,7 @@ You now need to run the repeater with the following environment variables:
 - `ESCAPE_REPEATER_ID`: Your repeater id.
 
 ```bash
-docker run -it --rm --name escape-proxy \
+docker run -it --rm --name escape-repeater \
     -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
     escapetech/repeater:latest
 ```
