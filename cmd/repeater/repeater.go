@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"crypto/tls"
+	"crypto/x509"
 	"log"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Escape-Technologies/repeater/internal"
 	"github.com/Escape-Technologies/repeater/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
@@ -22,10 +25,10 @@ var (
 )
 
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
-var url = "0.0.0.0:8080"
+var url = "repeater.escape.tech:443"
 
 func main() {
-	fmt.Printf("Running Escape repeater version %s, commit %s, built at %s\n", version, commit, date)
+	log.Printf("Running Escape repeater version %s, commit %s, built at %s\n", version, commit, date)
 
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
 	if !UUID.MatchString(repeaterId) {
@@ -38,26 +41,42 @@ func main() {
 	start(repeaterId)
 }
 
-func start(repeaterId string) {
-	fmt.Println("Starting repeater client...")
-
-	con, err := grpc.Dial("localhost:8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func getCon() *grpc.ClientConn {
+	var creds grpc.DialOption
+	if strings.Split(url, ":")[0] == "localhost" {
+		creds = grpc.WithTransportCredentials(insecure.NewCredentials())
+	} else {
+		systemRoots, err := x509.SystemCertPool()
+		if err != nil {
+			log.Fatalf("Error connecting: %v \n", err)
+		}
+		cred := credentials.NewTLS(&tls.Config{
+			RootCAs: systemRoots,
+		})
+		creds = grpc.WithTransportCredentials(cred)
+	}
+	con, err := grpc.Dial(url, creds)
 	if err != nil {
 		log.Fatalf("Error connecting: %v \n", err)
 	}
+	return con
+}
 
+func start(repeaterId string) {
+	log.Println("Starting repeater client...")
+
+	con := getCon()
 	defer con.Close()
 
 	// Set the client UUID in the metadata
-	md := metadata.Pairs("client_uuid", repeaterId)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "client_uuid", repeaterId)
 
 	client := proto.NewRepeaterClient(con)
 
 	for {
 		alreadyConnected := connectAndRun(client, ctx)
 		log.Println("Disconnected...")
-		if alreadyConnected {
+		if !alreadyConnected {
 			continue
 		}
 		log.Println("Reconnecting in 5 seconds...")
