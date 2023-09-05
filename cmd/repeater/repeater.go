@@ -21,7 +21,6 @@ import (
 var (
 	version = "dev"
 	commit  = "none"
-	date    = "unknown"
 )
 
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
