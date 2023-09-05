@@ -6,8 +6,11 @@ COPY go.mod go.sum ./
 
 RUN go mod download && go mod verify
 
+ARG VERSION
+ARG COMMIT
+
 COPY . .
-RUN go build -v -o /usr/local/bin/prog ./cmd/repeater/repeater.go
+RUN go build -ldflags="-s -w -X main.version='$VERSION' -X main.commit='$COMMIT'" -v -o /usr/local/bin/prog ./cmd/repeater/repeater.go
 
 FROM alpine:3.14
 COPY --from=builder /usr/local/bin/prog ./prog
