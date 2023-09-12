@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repeater
+  labels:
+    app: repeater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repeater
+  template:
+    metadata:
+      labels:
+        app: repeater
+    spec:
+      containers:
+        - name: repeater
+          image: escapetech/repeater:latest
+          imagePullPolicy: Always
+          env:
+            - name: ESCAPE_REPEATER_ID
+              value: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx # Replace with your Repeater ID
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 500m
+              memory: 500Mi
