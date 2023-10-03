@@ -3,5 +3,6 @@ version: "3.7"
 services:
   repeater:
     image: escapetech/repeater
+    restart: always
     environment:
       - ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
