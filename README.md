@@ -33,3 +33,9 @@ Feel free to contribute and add your own.
 ## Usage
 
 You can now go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/enterprise/repeater).
+
+## Contributing
+
+Feel free to contribute to this project by creating a pull request.
+
+If you want to test it locally, you can use the `ESCAPE_REPEATER_URL` to point to another repeater.
