@@ -98,6 +98,20 @@ func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected
 	hasConnected = true
 	log.Println("Connected to server...")
 
+	// Send healthcheck to the server
+	go func() {
+		for {
+			err = stream.Send(&proto.Response{
+				Data: []byte(""),
+				Correlation: 0,
+			})
+			if err != nil {
+				log.Printf("Error sending healthcheck: %v\n", err)
+			}
+			time.Sleep(30 * time.Second)
+		}
+	}()
+
 	for {
 		req, err := stream.Recv()
 		if err != nil {
