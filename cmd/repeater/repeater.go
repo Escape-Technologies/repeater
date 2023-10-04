@@ -18,13 +18,13 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// Injected by ldflags
 var (
 	version = "dev"
 	commit  = "none"
 )
 
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
-var url = "repeater.escape.tech:443"
 
 func main() {
 	log.Printf("Running Escape repeater version %s, commit %s\n", version, commit)
@@ -32,7 +32,7 @@ func main() {
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
 	if !UUID.MatchString(repeaterId) {
 		log.Println("ESCAPE_REPEATER_ID must be a UUID in lowercase")
-		log.Println("To get your repeater id, go to https://app.escape.tech/repeaters/")
+		log.Println("To get your repeater id, go to https://app.escape.tech/organization/network/")
 		log.Println("For more information, read the docs at https://docs.escape.tech/enterprise/repeater")
 		os.Exit(1)
 	}
@@ -41,6 +41,13 @@ func main() {
 }
 
 func getCon() *grpc.ClientConn {
+	url := os.Getenv("ESCAPE_REPEATER_URL")
+	if url == "" {
+		url = "repeater.escape.tech:443"
+	} else {
+		log.Printf("Using custom repeater url: %s\n", url)
+	}
+
 	var creds grpc.DialOption
 	if strings.Split(url, ":")[0] == "localhost" {
 		creds = grpc.WithTransportCredentials(insecure.NewCredentials())
