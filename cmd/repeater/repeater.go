@@ -77,13 +77,12 @@ func start(repeaterId string) {
 	client := proto.NewRepeaterClient(con)
 
 	for {
-		alreadyConnected := connectAndRun(client, repeaterId)
+		hasConnected := connectAndRun(client, repeaterId)
 		log.Println("Disconnected...")
-		if !alreadyConnected {
-			continue
+		if !hasConnected {
+			log.Println("Reconnecting in 5 seconds...")
+			time.Sleep(5 * time.Second)
 		}
-		log.Println("Reconnecting in 5 seconds...")
-		time.Sleep(5 * time.Second)
 	}
 }
 
@@ -100,14 +99,25 @@ func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected
 
 	// Send healthcheck to the server
 	go func() {
+		retries := 0
+
 		for {
+			log.Println("Sending healthcheck...")
 			err = stream.Send(&proto.Response{
-				Data: []byte(""),
+				Data:        []byte(""),
 				Correlation: 0,
 			})
 			if err != nil {
 				log.Printf("Error sending healthcheck: %v\n", err)
+				retries++
+				if retries > 5 {
+					log.Println("Too many retries, stopping healthchecks...")
+					return
+				}
+			} else {
+				retries = 0
 			}
+			log.Println("Healthcheck sent")
 			time.Sleep(30 * time.Second)
 		}
 	}()
@@ -118,18 +128,18 @@ func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected
 			log.Printf("Error receiving: %v \n", err)
 			return hasConnected
 		}
-		log.Println("Got work")
+		log.Printf("Received incoming stream (%d)\n", req.Correlation)
 
 		// Send request to server
 		// Use a go func to avoid blocking the stream
 		go func() {
 			startTime := time.Now()
 			res := internal.HandleRequest(req)
-			log.Println("Ok in", time.Since(startTime))
+			log.Printf("Processed stream in %v (%d)\n", time.Since(startTime), req.Correlation)
 
 			err = stream.Send(res)
 			if err != nil {
-				log.Printf("Error sending: %v\n", err)
+				log.Printf("Error processing stream (%d): %v \n", req.Correlation, err)
 			}
 		}()
 	}
