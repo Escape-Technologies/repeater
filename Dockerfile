@@ -13,5 +13,9 @@ COPY . .
 RUN go build -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT" -v -o /usr/local/bin/prog ./cmd/repeater/repeater.go
 
 FROM alpine:3.14
+
+RUN apk add --no-cache ca-certificates
+
 COPY --from=builder /usr/local/bin/prog ./prog
-ENTRYPOINT [ "./prog" ]
+
+ENTRYPOINT [ "sh", "-c", "update-ca-certificates && ./prog" ]
