@@ -30,6 +30,15 @@ docker run -it --rm --name escape-repeater \
 You can find in the example folder more deployment examples.
 Feel free to contribute and add your own.
 
+If you need to add a custom ca certificate, you can mount it in the container:
+
+```bash
+docker run -it --rm --name escape-repeater \
+    -v /path/to/ca.crt:/usr/local/share/ca-certificates/ca.crt \
+    -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+    escapetech/repeater:latest
+```
+
 ## Usage
 
 You can now go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/enterprise/repeater).
