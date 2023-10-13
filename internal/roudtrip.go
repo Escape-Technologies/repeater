@@ -37,7 +37,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 	// work
 	httpRes, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		log.Printf("ERROR sending request")
+		log.Printf("ERROR sending request : %v\n", err)
 		return protoErr(599, protoReq.Correlation)
 	}
 
