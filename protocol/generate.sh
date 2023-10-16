@@ -7,7 +7,7 @@ cd "$(dirname "$BASH_SOURCE[0]")"
 
 docker run -v "$(pwd)/..:${DIR}" \
     --rm \
-    --user 1000 \
+    --user "$(id -g):$(id -g)" \
     -e HOME="/tmp/" \
     --workdir="${DIR}" \
     --entrypoint=/bin/sh \
