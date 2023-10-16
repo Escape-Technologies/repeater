@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package repeater.v1;
+
+option go_package = "repeater/v1";
+
+service Repeater {
+  rpc Stream(stream Response) returns (stream Request) {}
+}
+
+message Request {
+  // TCP payload
+  bytes data = 1;
+
+  // Need to pass URL as the data is the TCP payload
+  string url = 2;
+
+  // link request and response
+  int64 correlation = 3;
+}
+
+message Response {
+  // TCP response
+  bytes data = 1;
+
+  // link request and response
+  int64 correlation = 3;
+}

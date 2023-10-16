@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Escape-Technologies/repeater/proto"
+	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
 func protoErr(status int, corr int64) *proto.Response {
