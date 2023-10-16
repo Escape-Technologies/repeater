@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package repeater.v1;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "repeater/v1";
 
 service Repeater {
   rpc Stream(stream Response) returns (stream Request) {}
+  rpc LogStream(stream Log) returns (stream Log) {}
 }
 
 message Request {
@@ -25,4 +28,22 @@ message Response {
 
   // link request and response
   int64 correlation = 3;
+}
+
+enum LogLevel {
+  DEBUG = 0;
+  INFO = 1;
+  WARN = 2;
+  ERROR = 3;
+}
+
+message Log {
+  // date
+  google.protobuf.Timestamp timestamp = 1;
+
+  // log level
+  LogLevel level = 2;
+
+  // log message
+  string message = 3;
 }

@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Repeater_Stream_FullMethodName = "/repeater.v1.Repeater/Stream"
+	Repeater_Stream_FullMethodName    = "/repeater.v1.Repeater/Stream"
+	Repeater_LogStream_FullMethodName = "/repeater.v1.Repeater/LogStream"
 )
 
 // RepeaterClient is the client API for Repeater service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RepeaterClient interface {
 	Stream(ctx context.Context, opts ...grpc.CallOption) (Repeater_StreamClient, error)
+	LogStream(ctx context.Context, opts ...grpc.CallOption) (Repeater_LogStreamClient, error)
 }
 
 type repeaterClient struct {
@@ -68,11 +70,43 @@ func (x *repeaterStreamClient) Recv() (*Request, error) {
 	return m, nil
 }
 
+func (c *repeaterClient) LogStream(ctx context.Context, opts ...grpc.CallOption) (Repeater_LogStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Repeater_ServiceDesc.Streams[1], Repeater_LogStream_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &repeaterLogStreamClient{stream}
+	return x, nil
+}
+
+type Repeater_LogStreamClient interface {
+	Send(*Log) error
+	Recv() (*Log, error)
+	grpc.ClientStream
+}
+
+type repeaterLogStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *repeaterLogStreamClient) Send(m *Log) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *repeaterLogStreamClient) Recv() (*Log, error) {
+	m := new(Log)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RepeaterServer is the server API for Repeater service.
 // All implementations must embed UnimplementedRepeaterServer
 // for forward compatibility
 type RepeaterServer interface {
 	Stream(Repeater_StreamServer) error
+	LogStream(Repeater_LogStreamServer) error
 	mustEmbedUnimplementedRepeaterServer()
 }
 
@@ -82,6 +116,9 @@ type UnimplementedRepeaterServer struct {
 
 func (UnimplementedRepeaterServer) Stream(Repeater_StreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method Stream not implemented")
+}
+func (UnimplementedRepeaterServer) LogStream(Repeater_LogStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method LogStream not implemented")
 }
 func (UnimplementedRepeaterServer) mustEmbedUnimplementedRepeaterServer() {}
 
@@ -122,6 +159,32 @@ func (x *repeaterStreamServer) Recv() (*Response, error) {
 	return m, nil
 }
 
+func _Repeater_LogStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(RepeaterServer).LogStream(&repeaterLogStreamServer{stream})
+}
+
+type Repeater_LogStreamServer interface {
+	Send(*Log) error
+	Recv() (*Log, error)
+	grpc.ServerStream
+}
+
+type repeaterLogStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *repeaterLogStreamServer) Send(m *Log) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *repeaterLogStreamServer) Recv() (*Log, error) {
+	m := new(Log)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Repeater_ServiceDesc is the grpc.ServiceDesc for Repeater service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -133,6 +196,12 @@ var Repeater_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Stream",
 			Handler:       _Repeater_Stream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "LogStream",
+			Handler:       _Repeater_LogStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
