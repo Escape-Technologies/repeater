@@ -1,9 +1,9 @@
 package internal
 
 import (
-	"log"
 	"net/http"
 
+	"github.com/Escape-Technologies/repeater/pkg/logger"
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
@@ -15,7 +15,7 @@ func protoErr(status int, corr int64) *proto.Response {
 		ProtoMinor: 0,
 	}, corr)
 	if err != nil {
-		log.Fatalf("Error parsing %v response", status)
+		logger.Error("Error parsing %v response", status)
 	}
 	return res
 }
@@ -30,20 +30,20 @@ func protoErr(status int, corr int64) *proto.Response {
 func HandleRequest(protoReq *proto.Request) *proto.Response {
 	httpReq, err := transportToRequest(protoReq)
 	if err != nil {
-		log.Printf("Error parsing request : %v\n", err)
+		logger.Error("Error parsing request : %v", err)
 		return protoErr(499, protoReq.Correlation)
 	}
 
 	// work
 	httpRes, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		log.Printf("ERROR sending request : %v\n", err)
+		logger.Error("ERROR sending request : %v", err)
 		return protoErr(599, protoReq.Correlation)
 	}
 
 	protoRes, err := responseToTransport(httpRes, protoReq.Correlation)
 	if err != nil {
-		log.Printf("Error parsing response : %v\n", err)
+		logger.Error("Error parsing response : %v", err)
 		return protoErr(598, protoReq.Correlation)
 	}
 

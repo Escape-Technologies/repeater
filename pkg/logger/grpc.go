@@ -2,10 +2,10 @@ package logger
 
 import (
 	"log"
+	"time"
 
 	grpc "github.com/Escape-Technologies/repeater/pkg/grpc"
 )
-
 
 func ConnectLogs(url, repeaterId string) (hasConnected bool) {
 	stream, closer, err := grpc.LogStream(url, repeaterId)
@@ -17,7 +17,11 @@ func ConnectLogs(url, repeaterId string) (hasConnected bool) {
 	log.Println("Connected to server...")
 
 	for {
-		msg := <-logSink
+		msg := queue.Next()
+		if msg == nil {
+			time.Sleep(time.Second)
+			continue
+		}
 		err := stream.Send(msg)
 		if err != nil {
 			log.Printf("Error receiving: %v \n", err)
