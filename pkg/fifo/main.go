@@ -91,7 +91,7 @@ func (q *Queue[V]) Next() (item *V) {
 	q.count--
 
 	if q.head.first >= q.head.last {
-		// we're at the end of this chunk and we should do some maintainance
+		// we're at the end of this chunk and we should do some maintenance
 		// if there are no follow up chunks then reset the current one so it can be used again.
 		if q.count == 0 {
 			q.head.first = 0

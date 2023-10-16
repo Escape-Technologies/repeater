@@ -8,7 +8,6 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-
 func LogStream(url, repeaterId string) (stream proto.Repeater_LogStreamClient, closer func(), err error) {
 	con := GetCon(url)
 
