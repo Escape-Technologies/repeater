@@ -1,20 +1,13 @@
 package main
 
 import (
-	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"log"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Escape-Technologies/repeater/internal"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
+	"github.com/Escape-Technologies/repeater/pkg/grpc"
 
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
@@ -41,7 +34,10 @@ func main() {
 	start(repeaterId)
 }
 
-func getCon() *grpc.ClientConn {
+
+func start(repeaterId string) {
+	log.Println("Starting repeater client...")
+
 	url := os.Getenv("ESCAPE_REPEATER_URL")
 	if url == "" {
 		url = "repeater.escape.tech:443"
@@ -49,36 +45,8 @@ func getCon() *grpc.ClientConn {
 		log.Printf("Using custom repeater url: %s\n", url)
 	}
 
-	var creds grpc.DialOption
-	if strings.Split(url, ":")[0] == "localhost" {
-		creds = grpc.WithTransportCredentials(insecure.NewCredentials())
-	} else {
-		systemRoots, err := x509.SystemCertPool()
-		if err != nil {
-			log.Fatalf("Error connecting: %v \n", err)
-		}
-		cred := credentials.NewTLS(&tls.Config{
-			RootCAs: systemRoots,
-		})
-		creds = grpc.WithTransportCredentials(cred)
-	}
-	con, err := grpc.Dial(url, creds)
-	if err != nil {
-		log.Fatalf("Error connecting: %v \n", err)
-	}
-	return con
-}
-
-func start(repeaterId string) {
-	log.Println("Starting repeater client...")
-
-	con := getCon()
-	defer con.Close()
-
-	client := proto.NewRepeaterClient(con)
-
 	for {
-		hasConnected := connectAndRun(client, repeaterId)
+		hasConnected := connectAndRun(url, repeaterId)
 		log.Println("Disconnected...")
 		if !hasConnected {
 			log.Println("Reconnecting in 5 seconds...")
@@ -87,15 +55,13 @@ func start(repeaterId string) {
 	}
 }
 
-func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected bool) {
-	hasConnected = false
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", repeaterId)
-	stream, err := client.Stream(ctx)
+func connectAndRun(url, repeaterId string) (hasConnected bool) {
+	stream, closer, err := grpc.Stream(url, repeaterId)
+	defer closer()
 	if err != nil {
 		log.Printf("Error creating stream: %v \n", err)
-		return hasConnected
+		return false
 	}
-	hasConnected = true
 	log.Println("Connected to server...")
 
 	// Send healthcheck to the server
@@ -127,7 +93,7 @@ func connectAndRun(client proto.RepeaterClient, repeaterId string) (hasConnected
 		req, err := stream.Recv()
 		if err != nil {
 			log.Printf("Error receiving: %v \n", err)
-			return hasConnected
+			return true
 		}
 		log.Printf("Received incoming stream (%d)\n", req.Correlation)
 
