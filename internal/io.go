@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Escape-Technologies/repeater/proto"
+	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
 func responseToTransport(r *http.Response, correlation int64) (*proto.Response, error) { // In the other program

@@ -11,11 +11,12 @@ import (
 	"time"
 
 	"github.com/Escape-Technologies/repeater/internal"
-	"github.com/Escape-Technologies/repeater/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+
+	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
 // Injected by ldflags
