@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Escape-Technologies/repeater/internal"
 	"github.com/Escape-Technologies/repeater/pkg/grpc"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
+	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
 
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
@@ -104,7 +104,7 @@ func connectAndRun(url, repeaterId string) (hasConnected bool) {
 		// Use a go func to avoid blocking the stream
 		go func() {
 			startTime := time.Now()
-			res := internal.HandleRequest(req)
+			res := roundtrip.HandleRequest(req)
 			logger.Info("Processed stream in %v (%d)", time.Since(startTime), req.Correlation)
 
 			err = stream.Send(res)
