@@ -33,6 +33,12 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		logger.Error("Error parsing request : %v", err)
 		return protoErr(499, protoReq.Correlation)
 	}
+	if httpReq.Header.Get("X-Debug") == "true" {
+		logger.Debug("Printing debug info for request %v", protoReq.Correlation)
+		logger.Debug("Url : %v", protoReq.Url)
+		dns(protoReq.Url)
+		traceroute(protoReq.Url)
+	}
 
 	// work
 	httpRes, err := http.DefaultClient.Do(httpReq)
