@@ -9,6 +9,7 @@ option go_package = "repeater/v1";
 service Repeater {
   rpc Stream(stream Response) returns (stream Request) {}
   rpc LogStream(stream Log) returns (stream Log) {}
+  rpc Debug(stream DebugResponse) returns (stream Request) {}
 }
 
 message Request {
@@ -28,6 +29,22 @@ message Response {
 
   // link request and response
   int64 correlation = 3;
+}
+
+message DebugResponse {
+  // plain response
+  Response response = 1;
+
+  // debug infos
+  DebugInfo infos = 2;
+
+  // link request and response
+  int64 correlation = 3;
+}
+
+message DebugInfo {
+  string dns = 1;
+  string traceroute = 2;
 }
 
 enum LogLevel {

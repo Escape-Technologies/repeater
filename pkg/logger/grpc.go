@@ -7,6 +7,13 @@ import (
 	grpc "github.com/Escape-Technologies/repeater/pkg/grpc"
 )
 
+func AlwaysConnect(url, repeaterId string) {
+	for {
+		ConnectLogs(url, repeaterId)
+		time.Sleep(time.Second)
+	}
+}
+
 func ConnectLogs(url, repeaterId string) (hasConnected bool) {
 	stream, closer, err := grpc.LogStream(url, repeaterId)
 	defer closer()
