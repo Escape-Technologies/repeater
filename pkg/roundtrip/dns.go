@@ -11,16 +11,16 @@ func dns(input string) {
 	logger.Debug("DNS debug info")
 	u, err := url.Parse(input)
 	if err != nil {
-		logger.Debug("ERROR parsing url : %v", err)
+		logger.Error("ERROR parsing url : %v", err)
 		return
 	}
 	res, err := net.LookupHost(u.Hostname())
 	if err != nil {
-		logger.Debug("ERROR looking up host : %v", err)
+		logger.Error("ERROR looking up host : %v", err)
 		return
 	}
 	if len(res) == 0 {
-		logger.Debug("No hosts found")
+		logger.Error("No hosts found")
 		return
 	}
 	for _, r := range res {
