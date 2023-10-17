@@ -4,6 +4,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/Escape-Technologies/repeater/pkg/debug"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/Escape-Technologies/repeater/pkg/stream"
 )
@@ -37,5 +38,6 @@ func main() {
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId)
+	go debug.AlwaysConnectAndRun(url, repeaterId)
 	stream.AlwaysConnectAndRun(url, repeaterId)
 }

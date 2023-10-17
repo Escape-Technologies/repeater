@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/aeden/traceroute v0.0.0-20210211061815-03f5f7cb7908 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
