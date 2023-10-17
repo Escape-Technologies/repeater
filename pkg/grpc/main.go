@@ -27,13 +27,3 @@ func Stream(url, repeaterId string) (stream proto.Repeater_StreamClient, closer 
 
 	return stream, func() { con.Close() }, err
 }
-
-func Debug(url, repeaterId string) (stream proto.Repeater_DebugClient, closer func(), err error) {
-	con := GetCon(url)
-
-	client := proto.NewRepeaterClient(con)
-	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", repeaterId)
-	stream, err = client.Debug(ctx)
-
-	return stream, func() { con.Close() }, err
-}
