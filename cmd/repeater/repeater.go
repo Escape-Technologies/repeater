@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/tls"
+	"net/http"
 	"os"
 	"regexp"
 
 	"github.com/Escape-Technologies/repeater/pkg/logger"
+	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
 	"github.com/Escape-Technologies/repeater/pkg/stream"
 )
 
@@ -34,6 +37,14 @@ func main() {
 		logger.Debug("Using custom repeater url: %s\n", url)
 	}
 
+	insecure := os.Getenv("ESCAPE_REPEATER_INSECURE")
+	if insecure == "1" || insecure == "true" {
+		logger.Debug("Allowing insecure ssl connections")
+		if roundtrip.Client.Transport == nil {
+			roundtrip.Client.Transport = http.DefaultTransport
+		}
+		roundtrip.Client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId)

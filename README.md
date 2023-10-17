@@ -39,6 +39,15 @@ docker run -it --rm --name escape-repeater \
     escapetech/repeater:latest
 ```
 
+If you want to allow insecure connections, you can set the `ESCAPE_REPEATER_INSECURE` environment variable to `true`:
+
+```bash
+docker run -it --rm --name escape-repeater \
+    -e ESCAPE_REPEATER_INSECURE=true \
+    -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+    escapetech/repeater:latest
+```
+
 ## Usage
 
 You can now go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/enterprise/repeater).
