@@ -38,6 +38,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		logger.Debug("Url : %v", protoReq.Url)
 		dns(protoReq.Url)
 		traceroute(protoReq.Url)
+		tls(protoReq.Url)
 	}
 
 	logger.Debug("Sending request (%v)", protoReq.Correlation)
