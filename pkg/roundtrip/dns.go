@@ -26,5 +26,4 @@ func dns(input string) {
 	for _, r := range res {
 		logger.Debug("Found dns result : %v", r)
 	}
-	return
 }
