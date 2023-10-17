@@ -7,6 +7,8 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
+var Client = &http.Client{}
+
 func protoErr(status int, corr int64) *proto.Response {
 	res, err := responseToTransport(&http.Response{
 		StatusCode: status,
@@ -42,7 +44,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 	}
 
 	logger.Debug("Sending request (%v)", protoReq.Correlation)
-	httpRes, err := http.DefaultClient.Do(httpReq)
+	httpRes, err := Client.Do(httpReq)
 	if err != nil {
 		logger.Error("ERROR sending request : %v", err)
 		return protoErr(599, protoReq.Correlation)
