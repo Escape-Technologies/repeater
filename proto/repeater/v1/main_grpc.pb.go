@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Repeater_Stream_FullMethodName    = "/repeater.v1.Repeater/Stream"
 	Repeater_LogStream_FullMethodName = "/repeater.v1.Repeater/LogStream"
-	Repeater_Debug_FullMethodName     = "/repeater.v1.Repeater/Debug"
 )
 
 // RepeaterClient is the client API for Repeater service.
@@ -30,7 +29,6 @@ const (
 type RepeaterClient interface {
 	Stream(ctx context.Context, opts ...grpc.CallOption) (Repeater_StreamClient, error)
 	LogStream(ctx context.Context, opts ...grpc.CallOption) (Repeater_LogStreamClient, error)
-	Debug(ctx context.Context, opts ...grpc.CallOption) (Repeater_DebugClient, error)
 }
 
 type repeaterClient struct {
@@ -103,44 +101,12 @@ func (x *repeaterLogStreamClient) Recv() (*Log, error) {
 	return m, nil
 }
 
-func (c *repeaterClient) Debug(ctx context.Context, opts ...grpc.CallOption) (Repeater_DebugClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Repeater_ServiceDesc.Streams[2], Repeater_Debug_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &repeaterDebugClient{stream}
-	return x, nil
-}
-
-type Repeater_DebugClient interface {
-	Send(*DebugResponse) error
-	Recv() (*Request, error)
-	grpc.ClientStream
-}
-
-type repeaterDebugClient struct {
-	grpc.ClientStream
-}
-
-func (x *repeaterDebugClient) Send(m *DebugResponse) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *repeaterDebugClient) Recv() (*Request, error) {
-	m := new(Request)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // RepeaterServer is the server API for Repeater service.
 // All implementations must embed UnimplementedRepeaterServer
 // for forward compatibility
 type RepeaterServer interface {
 	Stream(Repeater_StreamServer) error
 	LogStream(Repeater_LogStreamServer) error
-	Debug(Repeater_DebugServer) error
 	mustEmbedUnimplementedRepeaterServer()
 }
 
@@ -153,9 +119,6 @@ func (UnimplementedRepeaterServer) Stream(Repeater_StreamServer) error {
 }
 func (UnimplementedRepeaterServer) LogStream(Repeater_LogStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method LogStream not implemented")
-}
-func (UnimplementedRepeaterServer) Debug(Repeater_DebugServer) error {
-	return status.Errorf(codes.Unimplemented, "method Debug not implemented")
 }
 func (UnimplementedRepeaterServer) mustEmbedUnimplementedRepeaterServer() {}
 
@@ -222,32 +185,6 @@ func (x *repeaterLogStreamServer) Recv() (*Log, error) {
 	return m, nil
 }
 
-func _Repeater_Debug_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(RepeaterServer).Debug(&repeaterDebugServer{stream})
-}
-
-type Repeater_DebugServer interface {
-	Send(*Request) error
-	Recv() (*DebugResponse, error)
-	grpc.ServerStream
-}
-
-type repeaterDebugServer struct {
-	grpc.ServerStream
-}
-
-func (x *repeaterDebugServer) Send(m *Request) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *repeaterDebugServer) Recv() (*DebugResponse, error) {
-	m := new(DebugResponse)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // Repeater_ServiceDesc is the grpc.ServiceDesc for Repeater service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -265,12 +202,6 @@ var Repeater_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "LogStream",
 			Handler:       _Repeater_LogStream_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "Debug",
-			Handler:       _Repeater_Debug_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
