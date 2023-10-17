@@ -40,7 +40,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		traceroute(protoReq.Url)
 	}
 
-	// work
+	logger.Debug("Sending request (%v)", protoReq.Correlation)
 	httpRes, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		logger.Error("ERROR sending request : %v", err)
