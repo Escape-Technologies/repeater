@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var maxMsgSize = 1024 * 1024 * 1024
+
 func GetCon(url string) *grpc.ClientConn {
 	var creds grpc.DialOption
 	if strings.Split(url, ":")[0] == "localhost" {
@@ -25,7 +27,14 @@ func GetCon(url string) *grpc.ClientConn {
 		})
 		creds = grpc.WithTransportCredentials(cred)
 	}
-	con, err := grpc.Dial(url, creds)
+	con, err := grpc.Dial(
+		url,
+		creds,
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(maxMsgSize),
+			grpc.MaxCallSendMsgSize(maxMsgSize),
+		),
+	)
 	if err != nil {
 		log.Fatalf("Error connecting: %v \n", err)
 	}

@@ -49,6 +49,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		logger.Error("ERROR sending request : %v", err)
 		return protoErr(599, protoReq.Correlation)
 	}
+	logger.Debug("Received response code %d (%v)", httpRes.StatusCode, protoReq.Correlation)
 
 	protoRes, err := responseToTransport(httpRes, protoReq.Correlation)
 	if err != nil {
