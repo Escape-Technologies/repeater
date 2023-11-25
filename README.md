@@ -1,6 +1,7 @@
-# Escape repeater
+# Escape repeater proxy
 
-A simple repeater that can be used to allow escape to connect to some APIs.
+[Escape](https://escape.tech) is a comprehensive API security platform with powerful API security testing capabilities.
+This repository holds the code for the Escape Repeater proxy. A docker image that can be used to scan APIs exposed only in internal networks with Escape.
 
 ## Requirements
 
