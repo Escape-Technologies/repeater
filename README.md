@@ -3,55 +3,9 @@
 [Escape](https://escape.tech) is a comprehensive API security platform with powerful API security testing capabilities.
 This repository holds the code for the Escape Repeater proxy. A docker image that can be used to scan APIs exposed only in internal networks with Escape.
 
-## Requirements
-
-You need to have an [Escape](https://escape.tech) account.
-
-Before installing the repeater, you need to retrieve your repeater id.
-
-- `ESCAPE_REPEATER_ID` : Your repeater id, read the [documentation](https://docs.escape.tech/enterprise/repeater) to know how to retrieve it.
-
-## Install
-
-You have multiple options to install the repeater:
-
-- Docker image (covered in this tutorial)
-- From source ([go to releases](https://github.com/Escape-Technologies/repeater/releases/latest))
-
-You now need to run the repeater with the following environment variables:
-
-- `ESCAPE_REPEATER_ID`: Your repeater id.
-
-```bash
-docker run -it --rm --name escape-repeater \
-    -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-    escapetech/repeater:latest
-```
-
-You can find in the example folder more deployment examples.
-Feel free to contribute and add your own.
-
-If you need to add a custom ca certificate, you can mount it in the container:
-
-```bash
-docker run -it --rm --name escape-repeater \
-    -v /path/to/ca.crt:/usr/local/share/ca-certificates/ca.crt \
-    -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-    escapetech/repeater:latest
-```
-
-If you want to allow insecure connections, you can set the `ESCAPE_REPEATER_INSECURE` environment variable to `true`:
-
-```bash
-docker run -it --rm --name escape-repeater \
-    -e ESCAPE_REPEATER_INSECURE=true \
-    -e ESCAPE_REPEATER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-    escapetech/repeater:latest
-```
-
 ## Usage
 
-You can now go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/enterprise/repeater).
+Go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/enterprise/repeater).
 
 ## Contributing
 
