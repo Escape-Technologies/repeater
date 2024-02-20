@@ -13,8 +13,6 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${VERSION} -X main.co
 
 FROM cgr.dev/chainguard/static:latest
 
-USER nonroot
-
 COPY --from=builder /bin/prog /prog
 
 ENTRYPOINT ["/prog"]
