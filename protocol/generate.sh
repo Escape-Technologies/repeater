@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMG=bufbuild/buf:1.27.0
+IMG=bufbuild/buf:1.29.0
 DIR="/repo"
 
 cd "$(dirname "$BASH_SOURCE[0]")"
