@@ -3,12 +3,13 @@
 IMG=bufbuild/buf:1.29.0
 DIR="/repo"
 
-cd "$(dirname "$BASH_SOURCE[0]")"
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
-docker run -v "$(pwd)/..:${DIR}" \
+docker run \
+    --volume "$(pwd)/..:${DIR}" \
     --rm \
     --user "$(id -g):$(id -g)" \
-    -e HOME="/tmp/" \
+    --env HOME="/tmp/" \
     --workdir="${DIR}" \
     --entrypoint=/bin/sh \
     "${IMG}" \
