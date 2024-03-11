@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"log"
 	"net/http"
 	"os"
@@ -50,7 +49,7 @@ func main() {
 			log.Fatalf("Error loading mTLS keypair: %v\n", err)
 			os.Exit(1)
 		}
-		internal.Client = &http.Client{
+		roundtrip.Client = &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					Certificates: []tls.Certificate{cert},
@@ -59,10 +58,6 @@ func main() {
 		}
 	}
 
-	start(repeaterId)
-}
-
-func getCon() *grpc.ClientConn {
 	url := os.Getenv("ESCAPE_REPEATER_URL")
 	if url == "" {
 		url = "repeater.escape.tech:443"

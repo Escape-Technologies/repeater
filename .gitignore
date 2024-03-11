@@ -10,3 +10,4 @@ go-repeater
 main
 .vscode
 .idea
+._*
