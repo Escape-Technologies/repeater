@@ -43,7 +43,6 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		tls(protoReq.Url)
 	}
 
-	// work
 	logger.Debug("Sending request (%v)", protoReq.Correlation)
 	httpRes, err := Client.Do(httpReq)
 	if err != nil {
