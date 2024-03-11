@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -28,6 +29,33 @@ func main() {
 		logger.Error("To get your repeater id, go to https://app.escape.tech/organization/network/")
 		logger.Error("For more information, read the docs at https://docs.escape.tech/enterprise/repeater")
 		os.Exit(1)
+	}
+
+	mTLScrt := os.Getenv("ESCAPE_REPEATER_mTLS_CRT_FILE")
+	mTLSkey := os.Getenv("ESCAPE_REPEATER_mTLS_KEY_FILE")
+	if mTLScrt != "" && mTLSkey == "" {
+		log.Println("ESCAPE_REPEATER_mTLS_KEY_FILE must be set if ESCAPE_REPEATER_mTLS_CRT_FILE is set")
+		os.Exit(1)
+	}
+	if mTLScrt == "" && mTLSkey != "" {
+		log.Println("ESCAPE_REPEATER_mTLS_CRT_FILE must be set if ESCAPE_REPEATER_mTLS_KEY_FILE is set")
+		os.Exit(1)
+	}
+	if mTLScrt != "" && mTLSkey != "" {
+		log.Printf("Using mTLS from files : %s, %s\n", mTLScrt, mTLSkey)
+
+		cert, err := tls.LoadX509KeyPair(mTLScrt, mTLSkey)
+		if err != nil {
+			log.Fatalf("Error loading mTLS keypair: %v\n", err)
+			os.Exit(1)
+		}
+		roundtrip.Client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					Certificates: []tls.Certificate{cert},
+				},
+			},
+		}
 	}
 
 	url := os.Getenv("ESCAPE_REPEATER_URL")
