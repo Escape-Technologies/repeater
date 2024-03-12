@@ -28,7 +28,7 @@ func ConnectAndRun(url, repeaterId string) (hasConnected bool) {
 		logger.Error("Error creating stream: %v", err)
 		return false
 	}
-	logger.Info("Connected to server...")
+	logger.Info("Repeater connected to server...")
 
 	// Send healthcheck to the server
 	go func() {

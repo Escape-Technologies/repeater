@@ -1,10 +1,13 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	grpc "github.com/Escape-Technologies/repeater/pkg/grpc"
+	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func AlwaysConnect(url, repeaterId string) {
@@ -21,7 +24,7 @@ func ConnectLogs(url, repeaterId string) (hasConnected bool) {
 		log.Printf("Error creating stream: %v \n", err)
 		return false
 	}
-	log.Println("Connected to server...")
+	fmt.Printf("%v %v %v\n", timestamppb.Now().AsTime(), proto.LogLevel_INFO, "Log sender connected to server...")
 
 	for {
 		msg := queue.Next()
