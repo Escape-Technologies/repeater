@@ -49,7 +49,7 @@ func main() {
 			log.Fatalf("Error loading mTLS keypair: %v\n", err)
 			os.Exit(1)
 		}
-		roundtrip.Client = &http.Client{
+		roundtrip.MTLSClient = &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					Certificates: []tls.Certificate{cert},
@@ -67,11 +67,19 @@ func main() {
 
 	insecure := os.Getenv("ESCAPE_REPEATER_INSECURE")
 	if insecure == "1" || insecure == "true" {
-		logger.Debug("Allowing insecure ssl connections")
-		if roundtrip.Client.Transport == nil {
-			roundtrip.Client.Transport = http.DefaultTransport
+		if mTLScrt != "" && mTLSkey != "" {
+			logger.Warn("Insecure SSL flag is enabled, so mTLS will not be used.")
+			roundtrip.MTLSClient = nil
 		}
-		roundtrip.Client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+		logger.Debug("Allowing insecure ssl connections")
+		roundtrip.DefaultClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
 	}
 	logger.Info("Starting repeater client...")
 

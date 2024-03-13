@@ -7,7 +7,10 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-var Client = &http.Client{}
+var DefaultClient = &http.Client{}
+var MTLSClient *http.Client = nil
+
+const mTLSHeader = "X-Escape-mTLS"
 
 func protoErr(status int, corr int64) *proto.Response {
 	res, err := responseToTransport(&http.Response{
@@ -42,9 +45,23 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		traceroute(protoReq.Url)
 		tls(protoReq.Url)
 	}
+	client := DefaultClient
+	mTLS := false
+	if httpReq.Header.Get(mTLSHeader) != "" {
+		if MTLSClient != nil {
+			client = MTLSClient
+			mTLS = true
+		} else {
+			logger.Warn("The current request asked for mTLS but the current configuration does not support it. Falling back to regular TLS.")
+		}
+	}
 
-	logger.Debug("Sending request (%v)", protoReq.Correlation)
-	httpRes, err := Client.Do(httpReq)
+	if mTLS {
+		logger.Debug("Sending request (%v) with mTLS", protoReq.Correlation)
+	} else {
+		logger.Debug("Sending request (%v)", protoReq.Correlation)
+	}
+	httpRes, err := client.Do(httpReq)
 	if err != nil {
 		logger.Error("ERROR sending request : %v", err)
 		return protoErr(599, protoReq.Correlation)
