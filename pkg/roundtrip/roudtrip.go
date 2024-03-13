@@ -7,7 +7,7 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-
+var DefaultClient = &http.Client{}
 var MTLSClient *http.Client = nil
 
 const mTLSHeader = "X-Escape-mTLS"
