@@ -47,7 +47,7 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 	}
 	client := DefaultClient
 	mTLS := false
-	if httpReq.Header.Get(mTLSHeader) == "true" {
+	if httpReq.Header.Get(mTLSHeader) != "" {
 		if MTLSClient != nil {
 			client = MTLSClient
 			mTLS = true
