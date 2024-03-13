@@ -7,9 +7,6 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-var DefaultClient = &http.Client{
-	CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return nil },
-}
 
 var MTLSClient *http.Client = nil
 
