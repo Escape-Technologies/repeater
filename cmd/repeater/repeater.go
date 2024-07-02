@@ -82,6 +82,12 @@ func main() {
 			},
 		}
 	}
+
+	disableRedirectsEnv := os.Getenv("ESCAPE_REPEATER_DISABLE_REDIRECTS")
+	if disableRedirectsEnv == "1" || disableRedirectsEnv == "true" {
+		roundtrip.DisableRedirects = true
+	}
+
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId)
