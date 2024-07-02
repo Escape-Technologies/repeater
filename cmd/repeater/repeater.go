@@ -78,9 +78,16 @@ func main() {
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
+				Proxy: http.ProxyFromEnvironment,
 			},
 		}
 	}
+
+	disableRedirectsEnv := os.Getenv("ESCAPE_REPEATER_DISABLE_REDIRECTS")
+	if disableRedirectsEnv == "1" || disableRedirectsEnv == "true" {
+		roundtrip.DisableRedirects = true
+	}
+
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId)

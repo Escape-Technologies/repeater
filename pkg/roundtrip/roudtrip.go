@@ -9,6 +9,7 @@ import (
 
 var DefaultClient = &http.Client{}
 var MTLSClient *http.Client = nil
+var DisableRedirects = false
 
 const mTLSHeader = "X-Escape-mTLS"
 
@@ -46,6 +47,15 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		tls(protoReq.Url)
 	}
 	client := DefaultClient
+
+	if httpReq.Header.Get("X-Disable-Redirects") == "true" || DisableRedirects {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	} else {
+		client.CheckRedirect = nil
+	}
+
 	mTLS := false
 	if httpReq.Header.Get(mTLSHeader) != "" {
 		if MTLSClient != nil {
