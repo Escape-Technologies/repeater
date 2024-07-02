@@ -52,6 +52,8 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}
+	} else {
+		client.CheckRedirect = nil
 	}
 
 	mTLS := false
