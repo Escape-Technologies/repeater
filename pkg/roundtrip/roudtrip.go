@@ -2,6 +2,7 @@ package roundtrip
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
@@ -46,6 +47,15 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		tls(protoReq.Url)
 	}
 	client := DefaultClient
+
+	disableRedirects := os.Getenv("ESCAPE_REPEATER_DISABLE_REDIRECTS")
+
+	if httpReq.Header.Get("X-Disable-Redirects") == "true" || disableRedirects == "1" || disableRedirects == "true" {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	}
+
 	mTLS := false
 	if httpReq.Header.Get(mTLSHeader) != "" {
 		if MTLSClient != nil {

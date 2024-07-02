@@ -78,6 +78,7 @@ func main() {
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
+				Proxy: http.ProxyFromEnvironment,
 			},
 		}
 	}
