@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"sync/atomic"
 
+	"github.com/Escape-Technologies/repeater/pkg/health"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
 	"github.com/Escape-Technologies/repeater/pkg/stream"
@@ -19,9 +21,13 @@ var (
 )
 
 var UUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+var PORT = regexp.MustCompile(`^[1-9][0-9]{0,5}$`)
 
 func main() {
-	logger.Info("Running Escape repeater version %s, commit %s\n", version, commit)
+	logger.Info("Running Escape repeater version %s, commit %s", version, commit)
+
+	isConnected := &atomic.Bool{}
+	isConnected.Store(false)
 
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
 	if !UUID.MatchString(repeaterId) {
@@ -29,6 +35,15 @@ func main() {
 		logger.Error("To get your repeater id, go to https://app.escape.tech/organization/network/")
 		logger.Error("For more information, read the docs at https://docs.escape.tech/enterprise/repeater")
 		os.Exit(1)
+	}
+
+	healthCheckPort := os.Getenv("HEALTH_CHECK_PORT")
+	if healthCheckPort != "" {
+		if !PORT.MatchString(healthCheckPort) {
+			logger.Error("HEALTH_CHECK_PORT must be a valid port number, falling back to no health check")
+		} else {
+			go health.HealthCheck(healthCheckPort, isConnected)
+		}
 	}
 
 	mTLScrt := os.Getenv("ESCAPE_REPEATER_mTLS_CRT_FILE")
@@ -91,5 +106,5 @@ func main() {
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId)
-	stream.AlwaysConnectAndRun(url, repeaterId)
+	stream.AlwaysConnectAndRun(url, repeaterId, isConnected)
 }
