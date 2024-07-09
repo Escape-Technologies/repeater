@@ -16,12 +16,17 @@ func HealthCheck(
 	err := http.ListenAndServe(
 		":"+healthCheckPort,
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var msg string
 			if isConnectedPtr.Load() {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Repeater connected"))
+				msg = "Repeater connected"
 			} else {
 				w.WriteHeader(http.StatusServiceUnavailable)
-				w.Write([]byte("Repeater not connected"))
+				msg = "Repeater not connected"
+			}
+			_, err := w.Write([]byte(msg))
+			if err != nil {
+				logger.Debug("Error during health check: %v", err)
 			}
 		}),
 	)
