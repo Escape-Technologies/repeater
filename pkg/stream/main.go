@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/Escape-Technologies/repeater/pkg/grpc"
@@ -10,9 +11,10 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-func AlwaysConnectAndRun(url, repeaterId string) {
+func AlwaysConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) {
 	for {
-		hasConnected := ConnectAndRun(url, repeaterId)
+		hasConnected := ConnectAndRun(url, repeaterId, isConnected)
+		isConnected.Store(false)
 		logger.Info("Disconnected...")
 		if !hasConnected {
 			logger.Info("Reconnecting in 5 seconds...")
@@ -21,7 +23,7 @@ func AlwaysConnectAndRun(url, repeaterId string) {
 	}
 }
 
-func ConnectAndRun(url, repeaterId string) (hasConnected bool) {
+func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnected bool) {
 	stream, closer, err := grpc.Stream(url, repeaterId)
 	defer closer()
 	if err != nil {
@@ -29,6 +31,7 @@ func ConnectAndRun(url, repeaterId string) (hasConnected bool) {
 		return false
 	}
 	logger.Info("Repeater connected to server...")
+	isConnected.Store(true)
 
 	// Send healthcheck to the server
 	go func() {
