@@ -1,21 +1,18 @@
-FROM golang:1.21.0-alpine as builder
+FROM cgr.dev/chainguard/go:latest as builder
 
-WORKDIR /usr/src
+WORKDIR /src
 
 COPY go.mod go.sum ./
-
 RUN go mod download && go mod verify
 
 ARG VERSION
 ARG COMMIT
 
 COPY . .
-RUN go build -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT" -v -o /usr/local/bin/prog ./cmd/repeater/repeater.go
+RUN CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" -o /bin/prog cmd/repeater/repeater.go
 
-FROM alpine:3.14
+FROM cgr.dev/chainguard/static:latest
 
-RUN apk add --no-cache ca-certificates
+COPY --from=builder /bin/prog /prog
 
-COPY --from=builder /usr/local/bin/prog ./prog
-
-ENTRYPOINT [ "sh", "-c", "update-ca-certificates && ./prog" ]
+ENTRYPOINT ["/prog"]
