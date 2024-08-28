@@ -18,4 +18,4 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /usr/local/bin/prog ./prog
 
-ENTRYPOINT [ "sh", "-c", "update-ca-certificates && ./prog" ]
+ENTRYPOINT [ "sh", "-c", "update-ca-certificates || echo 'Unable to update certificates. If you want to add certificates to the agent, please make sure to run it as root.'; ./prog" ]
