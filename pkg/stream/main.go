@@ -28,6 +28,9 @@ func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnect
 	defer closer()
 	if err != nil {
 		logger.Error("Error creating stream: %v", err)
+		for _, why := range extractWhyError(err) {
+			logger.Error(why)
+		}
 		return false
 	}
 	logger.Info("Repeater connected to server...")
