@@ -27,8 +27,7 @@ func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnect
 	stream, closer, err := grpc.Stream(url, repeaterId)
 	defer closer()
 	if err != nil {
-		logger.Error("Error creating stream: %v", err)
-		for _, why := range extractWhyError(err) {
+		for _, why := range extractWhyStreamCreateError(err) {
 			logger.Error(why)
 		}
 		return false
@@ -64,7 +63,9 @@ func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnect
 	for {
 		req, err := stream.Recv()
 		if err != nil {
-			logger.Error("Error receiving: %v", err)
+			for _, why := range extractWhyRecvError(err) {
+				logger.Error(why)
+			}
 			return true
 		}
 		logger.Info("Received incoming stream (%d)", req.Correlation)
