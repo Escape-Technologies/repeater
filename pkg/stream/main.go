@@ -28,7 +28,7 @@ func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnect
 	defer closer()
 	if err != nil {
 		for _, why := range extractWhyStreamCreateError(err) {
-			logger.Error(why)
+			logger.Error(why) //nolint:govet
 		}
 		return false
 	}
@@ -64,7 +64,7 @@ func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnect
 		req, err := stream.Recv()
 		if err != nil {
 			for _, why := range extractWhyRecvError(err) {
-				logger.Error(why)
+				logger.Error(why) //nolint:govet
 			}
 			return true
 		}
