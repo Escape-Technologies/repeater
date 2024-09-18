@@ -27,7 +27,7 @@ func GetCon(url string) *grpc.ClientConn {
 		})
 		creds = grpc.WithTransportCredentials(cred)
 	}
-	con, err := grpc.Dial(
+	con, err := grpc.NewClient(
 		url,
 		creds,
 		grpc.WithDefaultCallOptions(

@@ -55,7 +55,7 @@ func setupHTTPClients() string {
 	if url == "" {
 		url = "repeater.escape.tech:443"
 	} else {
-		logger.Debug("Using custom repeater url: %s\n", url)
+		logger.Debug("Using custom repeater url: %s", url)
 	}
 
 	insecure := os.Getenv("ESCAPE_REPEATER_INSECURE")
