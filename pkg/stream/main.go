@@ -24,6 +24,25 @@ func AlwaysConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) {
 }
 
 func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnected bool) {
+	// Set up proxy dialer
+	proxyURL, _ := http.ProxyFromEnvironment(&http.Request{URL: &url.URL{Scheme: "https"}})
+	var dialer func(context.Context, string) (net.Conn, error)  = nil
+	if proxyURL != nil {
+		proxyDialer := &net.Dialer{}
+		dialer = func(ctx context.Context, addr string) (net.Conn, error) {
+			return proxyDialer.DialContext(ctx, "tcp", proxyURL.Host)
+		}
+	}
+
+	// Set up gRPC connection options
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+	if dialer != nil {
+		opts = append(opts, grpc.WithContextDialer(dialer))
+	}
+
+	// Create gRPC stream
 	stream, closer, err := grpc.Stream(url, repeaterId)
 	defer closer()
 	if err != nil {
