@@ -13,7 +13,7 @@ import (
 
 var maxMsgSize = 1024 * 1024 * 1024
 
-func GetCon(url string) *grpc.ClientConn {
+func GetCon(url, proxyURL string) *grpc.ClientConn {
 	var creds grpc.DialOption
 	if strings.Split(url, ":")[0] == "localhost" {
 		creds = grpc.WithTransportCredentials(insecure.NewCredentials())

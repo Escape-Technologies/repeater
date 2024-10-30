@@ -8,8 +8,8 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-func LogStream(url, repeaterId string) (stream proto.Repeater_LogStreamClient, closer func(), err error) {
-	con := GetCon(url)
+func LogStream(url, repeaterId, proxyURL string) (stream proto.Repeater_LogStreamClient, closer func(), err error) {
+	con := GetCon(url, proxyURL)
 
 	client := proto.NewRepeaterClient(con)
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", repeaterId)
@@ -18,8 +18,8 @@ func LogStream(url, repeaterId string) (stream proto.Repeater_LogStreamClient, c
 	return stream, func() { con.Close() }, err
 }
 
-func Stream(url, repeaterId string) (stream proto.Repeater_StreamClient, closer func(), err error) {
-	con := GetCon(url)
+func Stream(url, repeaterId, proxyURL string) (stream proto.Repeater_StreamClient, closer func(), err error) {
+	con := GetCon(url, proxyURL)
 
 	client := proto.NewRepeaterClient(con)
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authorization", repeaterId)
