@@ -79,7 +79,10 @@ func netDialerWithTCPKeepalive() *net.Dialer {
 		// the TCP keealive interval and time parameters.
 		Control: func(_, _ string, c syscall.RawConn) error {
 			return c.Control(func(fd uintptr) {
-				unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_KEEPALIVE, 1)
+				err := unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_KEEPALIVE, 1)
+				if err != nil {
+					log.Printf("failed to set SO_KEEPALIVE: %v", err)
+				}
 			})
 		},
 	}
