@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"golang.org/x/sys/unix"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -33,11 +34,13 @@ func GetCon(url, proxyURL string) *grpc.ClientConn {
 	}
 
 	if strings.HasPrefix(url, "localhost") {
+		logger.Debug("Using insecure GRPC connection")
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
+		logger.Debug("Using secure GRPC connection over TLS")
 		systemRoots, err := x509.SystemCertPool()
 		if err != nil {
-			log.Fatalf("Error connecting: %v \n", err)
+			log.Fatalf("Unable to load CA certificates: %v \n", err)
 		}
 		cred := credentials.NewTLS(&tls.Config{
 			RootCAs: systemRoots,
@@ -46,6 +49,7 @@ func GetCon(url, proxyURL string) *grpc.ClientConn {
 	}
 
 	if proxyURL != "" {
+		logger.Debug("Using custom proxy URL: %s", proxyURL)
 		opts = append(opts, grpc.WithContextDialer(proxyDialer(proxyURL)))
 	}
 
@@ -53,6 +57,7 @@ func GetCon(url, proxyURL string) *grpc.ClientConn {
 	if err != nil {
 		log.Fatalf("Error connecting: %v \n", err)
 	}
+	logger.Debug("Connected to %s", url)
 	return con
 }
 
