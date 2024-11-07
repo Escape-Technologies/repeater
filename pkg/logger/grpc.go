@@ -10,15 +10,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func AlwaysConnect(url, repeaterId string) {
+func AlwaysConnect(url, repeaterId, proxyURL string) {
 	for {
-		ConnectLogs(url, repeaterId)
+		ConnectLogs(url, repeaterId, proxyURL)
 		time.Sleep(time.Second)
 	}
 }
 
-func ConnectLogs(url, repeaterId string) (hasConnected bool) {
-	stream, closer, err := grpc.LogStream(url, repeaterId)
+func ConnectLogs(url, repeaterId, proxyURL string) (hasConnected bool) {
+	stream, closer, err := grpc.LogStream(url, repeaterId, proxyURL)
 	defer closer()
 	if err != nil {
 		log.Printf("Error creating stream: %v \n", err)

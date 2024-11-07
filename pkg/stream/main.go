@@ -11,9 +11,9 @@ import (
 	proto "github.com/Escape-Technologies/repeater/proto/repeater/v1"
 )
 
-func AlwaysConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) {
+func AlwaysConnectAndRun(url, repeaterId string, isConnected *atomic.Bool, proxyURL string) {
 	for {
-		hasConnected := ConnectAndRun(url, repeaterId, isConnected)
+		hasConnected := ConnectAndRun(url, repeaterId, isConnected, proxyURL)
 		isConnected.Store(false)
 		logger.Info("Disconnected...")
 		if !hasConnected {
@@ -23,8 +23,8 @@ func AlwaysConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) {
 	}
 }
 
-func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool) (hasConnected bool) {
-	stream, closer, err := grpc.Stream(url, repeaterId)
+func ConnectAndRun(url, repeaterId string, isConnected *atomic.Bool, proxyURL string) (hasConnected bool) {
+	stream, closer, err := grpc.Stream(url, repeaterId, proxyURL)
 	defer closer()
 	if err != nil {
 		for _, why := range extractWhyStreamCreateError(err) {

@@ -84,6 +84,14 @@ func setupHTTPClients() string {
 	return url
 }
 
+func setupProxyURL() string {
+	proxyURL := os.Getenv("ESCAPE_REPEATER_PROXY_URL")
+	if proxyURL != "" {
+		logger.Debug("Using custom proxy url: %s", proxyURL)
+	}
+	return proxyURL
+}
+
 func main() {
 	logger.Info("Running Escape repeater version %s, commit %s", version, commit)
 
@@ -108,9 +116,10 @@ func main() {
 	}
 
 	url := setupHTTPClients()
+	proxyURL := setupProxyURL()
 
 	logger.Info("Starting repeater client...")
 
-	go logger.AlwaysConnect(url, repeaterId)
-	stream.AlwaysConnectAndRun(url, repeaterId, isConnected)
+	go logger.AlwaysConnect(url, repeaterId, proxyURL)
+	stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
 }
