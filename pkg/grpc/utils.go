@@ -50,6 +50,10 @@ func GetCon(url, proxyURL string) *grpc.ClientConn {
 	if proxyURL != "" {
 		log.Printf("Using custom proxy URL: %s", proxyURL)
 		opts = append(opts, grpc.WithContextDialer(proxyDialer(proxyURL)))
+		// https://github.com/grpc/grpc-go/issues/7556
+		url = strings.TrimPrefix(url, "https://")
+		url = strings.TrimPrefix(url, "http://")
+		url = "passthrough:///" + url
 	}
 
 	con, err := grpc.NewClient(url, opts...)

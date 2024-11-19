@@ -12,6 +12,8 @@ import (
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
 	"github.com/Escape-Technologies/repeater/pkg/stream"
+
+	_ "net/http/pprof"
 )
 
 // Injected by ldflags
@@ -94,6 +96,16 @@ func setupProxyURL() string {
 
 func main() {
 	logger.Info("Running Escape repeater version %s, commit %s", version, commit)
+
+	go func() {
+		logger.Info("Starting pprof on http://0.0.0.0:6060/debug/pprof/")
+		err := http.ListenAndServe(":6060", nil)
+		if err != nil {
+			logger.Info("Failed to start pprof server, %s", err.Error())
+		} else {
+			logger.Info("Started pprof on http://0.0.0.0:6060/debug/pprof/")
+		}
+	}()
 
 	isConnected := &atomic.Bool{}
 	isConnected.Store(false)
