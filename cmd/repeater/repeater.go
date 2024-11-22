@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/Escape-Technologies/repeater/pkg/health"
+	"github.com/Escape-Technologies/repeater/pkg/kube"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
 	"github.com/Escape-Technologies/repeater/pkg/stream"
@@ -133,5 +134,6 @@ func main() {
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId, proxyURL)
+	go kube.AlwaysConnectAndRun()
 	stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
 }
