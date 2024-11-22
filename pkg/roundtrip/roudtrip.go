@@ -1,6 +1,7 @@
 package roundtrip
 
 import (
+	"net"
 	"net/http"
 
 	"github.com/Escape-Technologies/repeater/pkg/logger"
@@ -22,6 +23,14 @@ func protoErr(status int, corr int64) *proto.Response {
 	}, corr)
 	if err != nil {
 		logger.Error("Error parsing %v response", status)
+	}
+	return res
+}
+
+func ipsToString(ips []net.IP) string {
+	res := ""
+	for _, ip := range ips {
+		res += ip.String() + ","
 	}
 	return res
 }
@@ -77,6 +86,21 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 		return protoErr(599, protoReq.Correlation)
 	}
 	logger.Debug("Received response code %d (%v)", httpRes.StatusCode, protoReq.Correlation)
+
+	// This is a special case where we want to get the IP of the server, for enriched information in the platform
+	if httpReq.Header.Get("X-Get-IP") == "true" {
+		// Resolve the IP
+		ips, err := net.LookupIP(httpReq.URL.Hostname())
+		if err != nil {
+			logger.Error("Error resolving IP : %v", err)
+		} else {
+			if len(ips) == 0 {
+				logger.Error("No IP found for %v", httpReq.Host)
+			} else {
+				httpRes.Header.Add("X-Real-IPs", ipsToString(ips))
+			}
+		}
+	}
 
 	protoRes, err := responseToTransport(httpRes, protoReq.Correlation)
 	if err != nil {
