@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullname" . }}
+  labels:
+    app: {{ include "fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "fullname" . }}
+    spec:
+      containers:
+        - name: {{ include "fullname" . }}
+          serviceAccountName: {{ include "fullname" . }}
+          image: {{ .Values.container.image }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: {{ .Values.container.resources.cpu }}
+              memory: {{ .Values.container.resources.memory }}
+            requests:
+              cpu: {{ .Values.container.resources.cpu }}
+              memory: {{ .Values.container.resources.memory }}
+          env:
+            - name: ESCAPE_REPEATER_ID
+              value: {{ .Values.ESCAPE_REPEATER_ID }}
+            {{- with .Values.container.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- with .Values.container.extra }}
+        {{- toYaml . | nindent 10 }}
+        {{- end }}

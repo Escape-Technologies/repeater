@@ -1,0 +1,12 @@
+---
+# Mandatory : get your location ID here:
+# https://app.escape.tech/organization/private-locations/
+ESCAPE_REPEATER_ID: "00000000-0000-0000-0000-000000000000"
+
+container:
+  image: escapetech/repeater:latest
+  resources:
+    cpu: 500m
+    memory: 500Mi
+  env: []
+  extra: {}
