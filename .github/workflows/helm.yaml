@@ -22,6 +22,8 @@ jobs:
         run: |
           mkdir -p packaged
           helm package helm --destination packaged
+          cd packaged
+          helm repo index . --url https://escape-technologies.github.io/repeater/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
