@@ -6,7 +6,7 @@ ESCAPE_REPEATER_ID: "00000000-0000-0000-0000-000000000000"
 container:
   image: escapetech/repeater:latest
   resources:
-    cpu: 500m
-    memory: 500Mi
+    cpu: "1"
+    memory: "2Gi"
   env: []
   extra: {}
