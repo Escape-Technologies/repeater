@@ -2,13 +2,13 @@ apiVersion: v1
 entries:
   escape-repeater:
   - apiVersion: v2
-    appVersion: 1.0.0
-    created: "2025-01-07T10:55:40.792704052Z"
+    appVersion: 1.10.1
+    created: "2025-01-28T17:49:52.5313598Z"
     description: Escape repeater
-    digest: 642923df38d90f9d309e065fac96e0b371ae5a1be772f67799fc7d986ef51da4
+    digest: 99c38d94af63297f7e1e08a7df180f93620cd26d380ab5fd5191313505ec7a40
     name: escape-repeater
     type: application
     urls:
-    - https://escape-technologies.github.io/repeater/escape-repeater-0.1.0.tgz
-    version: 0.1.0
-generated: "2025-01-07T10:55:40.792412271Z"
+    - https://escape-technologies.github.io/repeater/escape-repeater-1.10.1.tgz
+    version: 1.10.1
+generated: "2025-01-28T17:49:52.531026615Z"
