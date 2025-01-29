@@ -76,9 +76,9 @@ func HandleRequest(protoReq *proto.Request) *proto.Response {
 	}
 
 	if mTLS {
-		logger.Debug("Sending request (%v) with mTLS", protoReq.Correlation)
+		logger.Debug("Sending request (%v) with mTLS: %s %s", protoReq.Correlation, httpReq.Method, httpReq.URL.String())
 	} else {
-		logger.Debug("Sending request (%v)", protoReq.Correlation)
+		logger.Debug("Sending request (%v): %s %s", protoReq.Correlation, httpReq.Method, httpReq.URL.String())
 	}
 	httpRes, err := client.Do(httpReq)
 	if err != nil {
