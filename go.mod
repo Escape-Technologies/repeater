@@ -1,11 +1,11 @@
 module github.com/Escape-Technologies/repeater
 
-go 1.22.0
+go 1.22.5
 
-toolchain go1.22.2
+toolchain go1.23.4
 
 require (
-	github.com/Escape-Technologies/cli v0.0.6
+	github.com/Escape-Technologies/cli v0.0.9
 	github.com/google/uuid v1.6.0
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	golang.org/x/sys v0.27.0

@@ -11,7 +11,7 @@ import (
 )
 
 type Autoprovisioner struct {
-	client       *publicAPI.Client
+	client       *publicAPI.ClientWithResponses
 	repeaterName string
 	locationId   uuid.UUID
 }
@@ -41,11 +41,7 @@ func (a *Autoprovisioner) GetId(ctx context.Context) (string, error) {
 
 func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	logger.Info("Looking up for repeater %s", a.repeaterName)
-	res, err := a.client.GetV1Locations(ctx)
-	if err != nil {
-		return "", err
-	}
-	locations, err := publicAPI.ParseGetV1LocationsResponse(res)
+	locations, err := a.client.GetV1LocationsWithResponse(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +50,7 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	}
 
 	for _, location := range *locations.JSON200 {
-		if location.Name == a.repeaterName {
+		if location.Name == a.repeaterName && location.Type == "REPEATER" {
 			a.locationId = location.Id
 			logger.Info("Repeater found in location %s", a.repeaterName)
 			return a.locationId.String(), nil
@@ -63,13 +59,9 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	logger.Info("Repeater not found in location, creating it")
 
 	// Create the repeater
-	res, err = a.client.PostV1Locations(ctx, publicAPI.PostV1LocationsJSONRequestBody{
+	location, err := a.client.PostV1LocationsWithResponse(ctx, publicAPI.PostV1LocationsJSONRequestBody{
 		Name: a.repeaterName,
 	})
-	if err != nil {
-		return "", err
-	}
-	location, err := publicAPI.ParsePostV1LocationsResponse(res)
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +69,7 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 		return "", errors.New("no location created")
 	}
 	a.locationId = location.JSON200.Id
-	logger.Info("New repeater created")
+	logger.Info("New repeater created with name %s", a.repeaterName)
 	return a.locationId.String(), nil
 }
 
@@ -90,11 +82,7 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 			return err
 		}
 	}
-	res, err := a.client.GetV1Integrations(ctx)
-	if err != nil {
-		return err
-	}
-	integrations, err := publicAPI.ParseGetV1IntegrationsResponse(res)
+	integrations, err := a.client.GetV1IntegrationsKubernetesWithResponse(ctx)
 	if err != nil {
 		return err
 	}
@@ -102,25 +90,26 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 		return errors.New("no integrations found")
 	}
 
-	// for _, integration := range *integrations.JSON200 {
-	// 	if integration.Kind == "KUBERNETES" && integration.LocationId != nil && *integration.LocationId == a.locationId {
-	// 		logger.Debug("Integration found, nothing to do")
-	// 		return nil
-	// 	}
-	// }
+	for _, integration := range *integrations.JSON200 {
+		if integration.LocationId != nil && *integration.LocationId == a.locationId {
+			logger.Debug("Integration found, nothing to do")
+			return nil
 
-	// id, err := uuid.Parse(a.locationId)
-	// if err != nil {
-	// 	return err
-	// }
-	// // Create the integration
-	// logger.Info("KUBERNETES integration bound to repeater %s not found, creating it", a.repeaterName)
-	// res, err = a.client.PostV1Integrations(ctx, publicAPI.PostV1IntegrationsJSONRequestBody{
-	// 	LocationId: id,
-	// 	Name:       a.repeaterName,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
+		}
+	}
+
+	// Create the integration
+	logger.Info("No kubernetes integration is bound to repeater %s, creating it", a.repeaterName)
+	integration, err := a.client.PostV1IntegrationsKubernetesWithResponse(ctx, publicAPI.PostV1IntegrationsKubernetesJSONRequestBody{
+		LocationId: &a.locationId,
+		Name:       a.repeaterName,
+	})
+	if err != nil {
+		return err
+	}
+	if integration.JSON200 == nil {
+		return errors.New("no integration created")
+	}
+	logger.Info("Kubernetes integration created with id %s", integration.JSON200.Id)
 	return nil
 }
