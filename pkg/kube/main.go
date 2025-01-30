@@ -60,12 +60,16 @@ func connectAndRun(ctx context.Context, cfg *rest.Config, ap *autoprovisioning.A
 	}
 
 	go func() {
+		for !isConnected.Load() || ctx.Err() != nil {
+			time.Sleep(1 * time.Second)
+		}
+		if ctx.Err() != nil {
+			lis.Close()
+			return
+		}
 		err := provisionIntegrationWithRetry(ctx, ap, 0)
 		if err != nil {
 			logger.Error("Error provisioning integration: %v", err)
-		}
-		for !isConnected.Load() {
-			time.Sleep(1 * time.Second)
 		}
 		<-ctx.Done()
 		lis.Close()

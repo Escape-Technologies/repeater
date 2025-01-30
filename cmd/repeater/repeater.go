@@ -164,6 +164,6 @@ func main() {
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId, proxyURL)
-	kube.AlwaysConnectAndRun(ctx, ap, isConnected)
+	go kube.AlwaysConnectAndRun(ctx, ap, isConnected)
 	stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
 }
