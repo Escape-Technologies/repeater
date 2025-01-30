@@ -14,6 +14,7 @@ import (
 	"github.com/Escape-Technologies/repeater/pkg/kube"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/Escape-Technologies/repeater/pkg/roundtrip"
+	"github.com/Escape-Technologies/repeater/pkg/stream"
 
 	_ "net/http/pprof"
 )
@@ -155,15 +156,14 @@ func main() {
 	go pprof()
 	go startHealth()
 
-	// proxyURL := setupProxyURL()
+	proxyURL := setupProxyURL()
 	ap := getAutoprovisioner()
-	// repeaterId := getRepeaterId(ctx, ap)
-	// url := setupHTTPClients()
+	repeaterId := getRepeaterId(ctx, ap)
+	url := setupHTTPClients()
 
 	logger.Info("Starting repeater client...")
 
-	// go logger.AlwaysConnect(url, repeaterId, proxyURL)
-	isConnected.Store(true)
+	go logger.AlwaysConnect(url, repeaterId, proxyURL)
 	kube.AlwaysConnectAndRun(ctx, ap, isConnected)
-	// stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
+	stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
 }

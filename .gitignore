@@ -10,5 +10,6 @@ go-repeater
 main
 .vscode
 .idea
+__*
 ._*
 .env

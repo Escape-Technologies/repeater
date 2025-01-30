@@ -5,7 +5,7 @@ go 1.22.5
 toolchain go1.23.4
 
 require (
-	github.com/Escape-Technologies/cli v0.0.10
+	github.com/Escape-Technologies/cli v0.0.12
 	github.com/google/uuid v1.6.0
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
 	github.com/sirupsen/logrus v1.9.3

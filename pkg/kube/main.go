@@ -89,6 +89,8 @@ func provisionIntegrationWithRetry(ctx context.Context, ap *autoprovisioning.Aut
 	err := ap.CreateIntegration(ctx)
 	if err == nil {
 		return nil
+	} else {
+		logger.Debug("Error provisioning integration: %v", err)
 	}
 	time.Sleep(autoprovisioningRetryInterval)
 	return provisionIntegrationWithRetry(ctx, ap, count+1)

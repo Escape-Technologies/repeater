@@ -82,35 +82,14 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if location.JSON200 == nil {
+	if location.StatusCode() != 200 || location.JSON200 == nil {
+		logger.Debug("API error: %d", location.StatusCode())
+		logger.Debug(string(location.Body))
 		return "", errors.New("no location created")
 	}
 	a.locationId = location.JSON200.Id
 	logger.Info("New repeater created with name %s", a.repeaterName)
 	return a.locationId.String(), nil
-}
-
-func printException(exception interface{}) {
-	ex, ok := exception.(struct {
-		Name    string
-		Message string
-	})
-	if ok {
-		logger.Debug("API error: %s : ", ex.Name, ex.Message)
-	}
-	evts, ok := exception.(struct {
-		Events []struct {
-			Logline  string
-			Severity *string
-		}
-	})
-	for _, event := range evts.Events {
-		s := ""
-		if event.Severity != nil {
-			s = *event.Severity
-		}
-		logger.Debug("%s %s", s, event.Logline)
-	}
 }
 
 // Create a kubernetes integration if it doesn't exist
@@ -158,13 +137,7 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	}
 	if integration.StatusCode() != 200 || integration.JSON200 == nil {
 		logger.Debug("API error: %d", integration.StatusCode())
-		if integration.JSON400 != nil {
-			printException(integration.JSON400)
-		} else if integration.JSON500 != nil {
-			printException(integration.JSON500)
-		} else {
-			logger.Debug("Unknown error: %s", string(integration.Body))
-		}
+		logger.Debug(string(integration.Body))
 		return errors.New("error creating integration")
 	}
 	a.integrationId = integration.JSON200.Id
