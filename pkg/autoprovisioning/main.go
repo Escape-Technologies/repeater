@@ -84,7 +84,7 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	}
 	if location.StatusCode() != 200 || location.JSON200 == nil {
 		logger.Debug("API error: %d", location.StatusCode())
-		logger.Debug(string(location.Body))
+		logger.Debug("%s", string(location.Body))
 		return "", errors.New("no location created")
 	}
 	a.locationId = location.JSON200.Id
@@ -111,7 +111,7 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	}
 	if integrations.StatusCode() != 200 || integrations.JSON200 == nil {
 		logger.Debug("API error: %d", integrations.StatusCode())
-		logger.Debug(string(integrations.Body))
+		logger.Debug("%s", string(integrations.Body))
 		return errors.New("error creating integration")
 	}
 	if integrations.JSON200 == nil {
@@ -137,7 +137,7 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	}
 	if integration.StatusCode() != 200 || integration.JSON200 == nil {
 		logger.Debug("API error: %d", integration.StatusCode())
-		logger.Debug(string(integration.Body))
+		logger.Debug("%s", string(integration.Body))
 		return errors.New("error creating integration")
 	}
 	a.integrationId = integration.JSON200.Id
