@@ -37,7 +37,11 @@ spec:
             - name: HEALTH_CHECK_PORT
               value: '8080'
             - name: ESCAPE_REPEATER_ID
-              value: {{ .Values.ESCAPE_REPEATER_ID }}
+              value: {{ .Values.ESCAPE_REPEATER_ID | default "" | quote }}
+            - name: ESCAPE_REPEATER_NAME
+              value: {{ .Values.ESCAPE_REPEATER_NAME | default "" | quote }}
+            - name: ESCAPE_API_KEY
+              value: {{ .Values.ESCAPE_API_KEY | default "" | quote }}
             {{- with .Values.container.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

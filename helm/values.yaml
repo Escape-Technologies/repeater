@@ -1,7 +1,13 @@
 ---
-# Mandatory : get your location ID here:
-# https://app.escape.tech/organization/private-locations/
-ESCAPE_REPEATER_ID: "00000000-0000-0000-0000-000000000000"
+# Choices:
+
+# # 1. Get your location ID here:
+# # https://app.escape.tech/organization/private-locations/
+# ESCAPE_REPEATER_ID: "00000000-0000-0000-0000-000000000000"
+
+# # 2. Use autoprovisioning with a name and an API key
+# ESCAPE_REPEATER_NAME: "my-repeater"
+# ESCAPE_API_KEY: "00000000-0000-0000-0000-000000000000"
 
 container:
   image: escapetech/repeater:latest
