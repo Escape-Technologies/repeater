@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"sync/atomic"
 
+	"github.com/Escape-Technologies/repeater/pkg/autoprovisioning"
 	"github.com/Escape-Technologies/repeater/pkg/health"
 	"github.com/Escape-Technologies/repeater/pkg/kube"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
@@ -95,45 +97,73 @@ func setupProxyURL() string {
 	return proxyURL
 }
 
-func main() {
-	logger.Info("Running Escape repeater version %s, commit %s", version, commit)
+var isConnected = &atomic.Bool{}
 
-	go func() {
-		logger.Info("Starting pprof on http://0.0.0.0:6060/debug/pprof/")
-		err := http.ListenAndServe(":6060", nil)
-		if err != nil {
-			logger.Info("Failed to start pprof server, %s", err.Error())
-		} else {
-			logger.Info("Started pprof on http://0.0.0.0:6060/debug/pprof/")
-		}
-	}()
-
-	isConnected := &atomic.Bool{}
+func startHealth() {
 	isConnected.Store(false)
+	healthCheckPort := os.Getenv("HEALTH_CHECK_PORT")
+	if healthCheckPort != "" {
+		if !PORT.MatchString(healthCheckPort) {
+			logger.Error("HEALTH_CHECK_PORT must be a valid port number, falling back to no health check")
+		} else {
+			health.HealthCheck(healthCheckPort, isConnected)
+		}
+	}
+}
 
+func getRepeaterId(ctx context.Context, ap *autoprovisioning.Autoprovisioner) string {
 	repeaterId := os.Getenv("ESCAPE_REPEATER_ID")
+	if ap != nil && repeaterId == "" {
+		logger.Info("ESCAPE_REPEATER_ID is not set, using autoprovisioning")
+		repeaterId, err := ap.GetId(ctx)
+		if err != nil {
+			logger.Error("Failed to get repeater id from autoprovisioning, %s", err.Error())
+			os.Exit(1)
+		}
+		return repeaterId
+	}
 	if !UUID.MatchString(repeaterId) {
 		logger.Error("ESCAPE_REPEATER_ID must be a UUID in lowercase")
 		logger.Error("To get your repeater id, go to https://app.escape.tech/organization/network/")
 		logger.Error("For more information, read the docs at https://docs.escape.tech/enterprise/repeater")
 		os.Exit(1)
 	}
+	return repeaterId
+}
 
-	healthCheckPort := os.Getenv("HEALTH_CHECK_PORT")
-	if healthCheckPort != "" {
-		if !PORT.MatchString(healthCheckPort) {
-			logger.Error("HEALTH_CHECK_PORT must be a valid port number, falling back to no health check")
-		} else {
-			go health.HealthCheck(healthCheckPort, isConnected)
-		}
+func pprof() {
+	logger.Info("Starting pprof on http://0.0.0.0:6060/debug/pprof/")
+	err := http.ListenAndServe(":6060", nil)
+	if err != nil {
+		logger.Info("Failed to start pprof server, %s", err.Error())
+	} else {
+		logger.Info("Started pprof on http://0.0.0.0:6060/debug/pprof/")
 	}
+}
 
+func getAutoprovisioner() *autoprovisioning.Autoprovisioner {
+	ap, err := autoprovisioning.NewAutoprovisioner()
+	if err != nil {
+		logger.Info("Unable to setup autoprovisioning, using only local repeater id: %s", err.Error())
+		return nil
+	}
+	return ap
+}
+
+func main() {
+	ctx := context.Background()
+	logger.Info("Running Escape repeater version %s, commit %s", version, commit)
+	go pprof()
+	go startHealth()
+
+	ap := getAutoprovisioner()
+	repeaterId := getRepeaterId(ctx, ap)
 	url := setupHTTPClients()
 	proxyURL := setupProxyURL()
 
 	logger.Info("Starting repeater client...")
 
 	go logger.AlwaysConnect(url, repeaterId, proxyURL)
-	go kube.AlwaysConnectAndRun()
+	go kube.AlwaysConnectAndRun(ctx, ap)
 	stream.AlwaysConnectAndRun(url, repeaterId, isConnected, proxyURL)
 }

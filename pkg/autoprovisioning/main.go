@@ -6,17 +6,21 @@ import (
 	"os"
 
 	publicAPI "github.com/Escape-Technologies/cli/pkg/api"
+	"github.com/Escape-Technologies/cli/pkg/log"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 type Autoprovisioner struct {
-	client       *publicAPI.ClientWithResponses
-	repeaterName string
-	locationId   uuid.UUID
+	client        *publicAPI.ClientWithResponses
+	repeaterName  string
+	locationId    uuid.UUID
+	integrationId uuid.UUID
 }
 
 func NewAutoprovisioner() (*Autoprovisioner, error) {
+	log.SetLevel(logrus.TraceLevel)
 	client, err := publicAPI.NewAPIClient()
 	if err != nil {
 		return nil, err
@@ -75,6 +79,10 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 
 // Create a kubernetes integration if it doesn't exist
 func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
+	if a.integrationId != uuid.Nil {
+		return nil
+	}
+
 	logger.Debug("Looking up for integration bound to repeater %s", a.repeaterName)
 	if a.locationId == uuid.Nil {
 		_, err := a.getId(ctx)
@@ -110,6 +118,7 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	if integration.JSON200 == nil {
 		return errors.New("no integration created")
 	}
-	logger.Info("Kubernetes integration created with id %s", integration.JSON200.Id)
+	a.integrationId = integration.JSON200.Id
+	logger.Info("Kubernetes integration created with id %s", a.integrationId)
 	return nil
 }

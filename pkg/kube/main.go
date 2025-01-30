@@ -2,10 +2,12 @@ package kube
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/Escape-Technologies/repeater/pkg/autoprovisioning"
 	"github.com/Escape-Technologies/repeater/pkg/logger"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -17,6 +19,9 @@ const (
 	defaultStaticPrefix = "/static/"
 	defaultAPIPrefix    = "/"
 	defaultAddress      = "127.0.0.1"
+
+	autoprovisioningRetryInterval = 5 * time.Second
+	autoprovisioningRetryCount    = 5
 )
 
 func inferConfig() (*rest.Config, error) {
@@ -31,10 +36,9 @@ func inferConfig() (*rest.Config, error) {
 	}
 }
 
-func connectAndRun(cfg *rest.Config) error {
-	ctx, cancel := context.WithCancel(context.Background())
+func connectAndRun(ctx context.Context, cfg *rest.Config, ap *autoprovisioning.Autoprovisioner) error {
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	logger.Debug("Connected to k8s API")
 
 	srv, err := proxy.NewServer(
 		"",
@@ -55,10 +59,15 @@ func connectAndRun(cfg *rest.Config) error {
 	}
 
 	go func() {
+		err := provisionIntegrationWithRetry(ctx, ap, 0)
+		if err != nil {
+			logger.Error("Error provisioning integration: %v", err)
+		}
 		<-ctx.Done()
 		lis.Close()
 	}()
 
+	logger.Debug("Connecting to k8s API")
 	err = srv.ServeOnListener(lis)
 	if err != nil {
 		return fmt.Errorf("error serving: %w", err)
@@ -66,19 +75,34 @@ func connectAndRun(cfg *rest.Config) error {
 	return nil
 }
 
-func AlwaysConnectAndRun() {
+func provisionIntegrationWithRetry(ctx context.Context, ap *autoprovisioning.Autoprovisioner, count int) error {
+	if ap == nil {
+		return nil
+	}
+	if count > autoprovisioningRetryCount {
+		return errors.New("failed to provision integration")
+	}
+	time.Sleep(autoprovisioningRetryInterval)
+	err := ap.CreateIntegration(ctx)
+	if err != nil {
+		return provisionIntegrationWithRetry(ctx, ap, count+1)
+	}
+	return nil
+}
+
+func AlwaysConnectAndRun(ctx context.Context, ap *autoprovisioning.Autoprovisioner) {
 	logger.Debug("Checking if the k8s API is available...")
 
 	cfg, err := inferConfig()
 	if err != nil {
-		logger.Debug("Not connected to k8s API")
+		logger.Debug("Not connected to k8s API: %s", err.Error())
 		return
 	}
 
 	logger.Info("Exposing API on http://%s:%d", defaultAddress, defaultPort)
 
 	for {
-		err := connectAndRun(cfg)
+		err := connectAndRun(ctx, cfg, ap)
 		if err != nil {
 			logger.Error("Error connecting to k8s API: %v", err)
 		}
