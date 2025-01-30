@@ -2,7 +2,10 @@ package autoprovisioning
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
+	"net/http"
+	"net/url"
 	"os"
 
 	publicAPI "github.com/Escape-Technologies/cli/pkg/api"
@@ -20,18 +23,28 @@ type Autoprovisioner struct {
 }
 
 func NewAutoprovisioner() (*Autoprovisioner, error) {
-	log.SetLevel(logrus.TraceLevel)
-	client, err := publicAPI.NewAPIClient()
-	if err != nil {
-		return nil, err
-	}
 	repeaterName := os.Getenv("ESCAPE_REPEATER_NAME")
 	if repeaterName == "" {
 		return nil, errors.New("ESCAPE_REPEATER_NAME is not set")
 	}
-	return &Autoprovisioner{client: client, repeaterName: repeaterName,
-		locationId: uuid.Nil,
-	}, nil
+	log.SetLevel(logrus.TraceLevel)
+	insecure := os.Getenv("ESCAPE_REPEATER_INSECURE")
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure == "1" || insecure == "true"},
+	}
+	proxyURL := os.Getenv("ESCAPE_REPEATER_PROXY_URL")
+	if proxyURL != "" {
+		url, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, err
+		}
+		transport.Proxy = http.ProxyURL(url)
+	}
+	client, err := publicAPI.NewAPIClient(publicAPI.WithHTTPClient(&http.Client{Transport: transport}))
+	if err != nil {
+		return nil, err
+	}
+	return &Autoprovisioner{client: client, repeaterName: repeaterName}, nil
 }
 
 // Get the repeater ID from locations using the public API
@@ -77,6 +90,29 @@ func (a *Autoprovisioner) getId(ctx context.Context) (string, error) {
 	return a.locationId.String(), nil
 }
 
+func printException(exception interface{}) {
+	ex, ok := exception.(struct {
+		Name    string
+		Message string
+	})
+	if ok {
+		logger.Debug("API error: %s : ", ex.Name, ex.Message)
+	}
+	evts, ok := exception.(struct {
+		Events []struct {
+			Logline  string
+			Severity *string
+		}
+	})
+	for _, event := range evts.Events {
+		s := ""
+		if event.Severity != nil {
+			s = *event.Severity
+		}
+		logger.Debug("%s %s", s, event.Logline)
+	}
+}
+
 // Create a kubernetes integration if it doesn't exist
 func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	if a.integrationId != uuid.Nil {
@@ -94,6 +130,11 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	if integrations.StatusCode() != 200 || integrations.JSON200 == nil {
+		logger.Debug("API error: %d", integrations.StatusCode())
+		logger.Debug(string(integrations.Body))
+		return errors.New("error creating integration")
+	}
 	if integrations.JSON200 == nil {
 		return errors.New("no integrations found")
 	}
@@ -101,8 +142,8 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	for _, integration := range *integrations.JSON200 {
 		if integration.LocationId != nil && *integration.LocationId == a.locationId {
 			logger.Debug("Integration found, nothing to do")
+			a.integrationId = integration.Id
 			return nil
-
 		}
 	}
 
@@ -115,8 +156,16 @@ func (a *Autoprovisioner) CreateIntegration(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if integration.JSON200 == nil {
-		return errors.New("no integration created")
+	if integration.StatusCode() != 200 || integration.JSON200 == nil {
+		logger.Debug("API error: %d", integration.StatusCode())
+		if integration.JSON400 != nil {
+			printException(integration.JSON400)
+		} else if integration.JSON500 != nil {
+			printException(integration.JSON500)
+		} else {
+			logger.Debug("Unknown error: %s", string(integration.Body))
+		}
+		return errors.New("error creating integration")
 	}
 	a.integrationId = integration.JSON200.Id
 	logger.Info("Kubernetes integration created with id %s", a.integrationId)

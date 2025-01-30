@@ -5,9 +5,10 @@ go 1.22.5
 toolchain go1.23.4
 
 require (
-	github.com/Escape-Technologies/cli v0.0.9
+	github.com/Escape-Technologies/cli v0.0.10
 	github.com/google/uuid v1.6.0
 	github.com/pixelbender/go-traceroute v0.0.0-20190414152342-e631ab553a80
+	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.27.0
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.35.1
@@ -28,7 +29,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/net v0.31.0 // indirect

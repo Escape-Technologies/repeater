@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/Escape-Technologies/repeater/pkg/autoprovisioning"
@@ -36,7 +37,7 @@ func inferConfig() (*rest.Config, error) {
 	}
 }
 
-func connectAndRun(ctx context.Context, cfg *rest.Config, ap *autoprovisioning.Autoprovisioner) error {
+func connectAndRun(ctx context.Context, cfg *rest.Config, ap *autoprovisioning.Autoprovisioner, isConnected *atomic.Bool) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -63,6 +64,9 @@ func connectAndRun(ctx context.Context, cfg *rest.Config, ap *autoprovisioning.A
 		if err != nil {
 			logger.Error("Error provisioning integration: %v", err)
 		}
+		for !isConnected.Load() {
+			time.Sleep(1 * time.Second)
+		}
 		<-ctx.Done()
 		lis.Close()
 	}()
@@ -82,15 +86,15 @@ func provisionIntegrationWithRetry(ctx context.Context, ap *autoprovisioning.Aut
 	if count > autoprovisioningRetryCount {
 		return errors.New("failed to provision integration")
 	}
-	time.Sleep(autoprovisioningRetryInterval)
 	err := ap.CreateIntegration(ctx)
-	if err != nil {
-		return provisionIntegrationWithRetry(ctx, ap, count+1)
+	if err == nil {
+		return nil
 	}
-	return nil
+	time.Sleep(autoprovisioningRetryInterval)
+	return provisionIntegrationWithRetry(ctx, ap, count+1)
 }
 
-func AlwaysConnectAndRun(ctx context.Context, ap *autoprovisioning.Autoprovisioner) {
+func AlwaysConnectAndRun(ctx context.Context, ap *autoprovisioning.Autoprovisioner, isConnected *atomic.Bool) {
 	logger.Debug("Checking if the k8s API is available...")
 
 	cfg, err := inferConfig()
@@ -102,7 +106,7 @@ func AlwaysConnectAndRun(ctx context.Context, ap *autoprovisioning.Autoprovision
 	logger.Info("Exposing API on http://%s:%d", defaultAddress, defaultPort)
 
 	for {
-		err := connectAndRun(ctx, cfg, ap)
+		err := connectAndRun(ctx, cfg, ap, isConnected)
 		if err != nil {
 			logger.Error("Error connecting to k8s API: %v", err)
 		}
