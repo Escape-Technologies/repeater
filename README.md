@@ -1,3 +1,8 @@
+# Depcreation Notice
+
+THis repository has been depcrated in favor of https://github.com/Escape-Technologies/cli
+
+
 # Escape repeater proxy
 
 [Escape](https://escape.tech) is a comprehensive API security platform with powerful API security testing capabilities.
@@ -5,7 +10,7 @@ This repository holds the code for the Escape Repeater proxy. A docker image tha
 
 ## Usage
 
-Go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/documentation/enterprise/private-location).
+Go to the escape documentation follow the steps to [use your repeater](https://docs.escape.tech/documentation/enterprise/private-location/). 
 
 ## Contributing
 
